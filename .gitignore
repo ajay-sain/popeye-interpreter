@@ -1,3 +1,18 @@
+# PyCharm
+.idea/
+*.iml
+*.iws
+.pytest_cache/
+
+# C++
+build/
+cmake-build-debug/
+cmake-build-release/
+.vscode/
+*.pyc
+*.pyo
+*.egg-info
+*__pycache__/
 # Prerequisites
 *.d
 
@@ -36,6 +51,18 @@
 *.exe
 *.out
 *.app
+*.ncb
+*.suo
+*.pdb
+*.local.xml
+*.user
+*.userosscache
+*.sln
+*.sw?
 
 # debug information files
 *.dwo
+# CMake
+CMakeCache.txt
+CMakeFiles/
+cmake_install.cmake

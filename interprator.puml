@@ -1,0 +1,23 @@
+@startuml
+class Interpreter {
+  +execute(sourceCode: str): void
+}
+
+class Parser {
+  +parse(sourceCode: str): AST
+}
+
+class Compiler {
+  +compile(ast: AST): Bytecode
+}
+
+class VirtualMachine {
+  +execute(bytecode: Bytecode): void
+}
+
+Interpreter --> Parser
+Interpreter --> Compiler
+Interpreter --> VirtualMachine
+Parser --> AST
+Compiler --> Bytecode
+@enduml

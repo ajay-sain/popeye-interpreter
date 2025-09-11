@@ -4,6 +4,8 @@ add_executable(${PROJECT_NAME}
         Interpreter.cpp
         parser.cpp
         lexer.cpp
+        Ast.cpp
+        Evaluator.cpp
 )
 
 # Set include directories for this target

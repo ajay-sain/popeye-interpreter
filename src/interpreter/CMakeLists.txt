@@ -4,7 +4,7 @@ add_executable(${PROJECT_NAME}
         Interpreter.cpp
         parser.cpp
         lexer.cpp
-        Ast.cpp
+#        Ast.cpp
         Evaluator.cpp
 )
 

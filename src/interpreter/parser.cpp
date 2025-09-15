@@ -8,7 +8,6 @@
 #include "interpreter/parser.h"
 
 namespace interpreter {
-
     void Parser::parse() {
         Token token = lexer.next();
         while (token.type != TokenType::EOF_) {

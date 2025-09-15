@@ -13,7 +13,7 @@
 void interpreter::Interpreter::run() {
     spdlog::info("Running Interpreter");
 
-    std::ifstream file("/Users/ajaysain/Learning/CPP/interpreter/language_examples/example2.popeye");
+    std::ifstream file("/Users/ajaysain/Learning/CPP/interpreter/examples/example2.popeye");
     if (!file.is_open()) {
         spdlog::error("Failed to open file");
         return;
@@ -24,14 +24,14 @@ void interpreter::Interpreter::run() {
     std::string input = buffer.str();
     interpreter::Parser parser(input);
     parser.parse();
-//    while (true) {
-//        std::cout << "command > ";
-//        std::string input;
-//        std::getline(std::cin, input);
-//        if (input == "exit") {
-//            break;
-//        }
-//        interpreter::Parser parser(input);
-//        parser.parse();
-//    }
+    while (true) {
+        std::cout << "command > ";
+        std::string input;
+        std::getline(std::cin, input);
+        if (input == "exit") {
+            break;
+        }
+        interpreter::Parser parser(input);
+        parser.parse();
+    }
 }

@@ -62,19 +62,7 @@ interpreter::Token interpreter::Lexer::next() {
             advance();
             if (match('=')) return Token{TokenType::GREATER_EQUAL, ">="};
             return Token{TokenType::GREATER, ">"};
-//
-//        case '\\':
-//            advance();
-//            switch (peekNextChar()) {
-//                case '\\': return Token{TokenType::BACKSLASH, "\\"};
-//                case '\'': return Token{TokenType::SINGLE_QUOTE, "\\'"};
-//                case '"': return Token{TokenType::DOUBLE_QUOTE, "\\\""};
-//                case 'n': return Token{TokenType::NEWLINE, "\\n"};
-//                case 't': return Token{TokenType::TAB, "\\t"};
-//                case 'r': return Token{TokenType::CARRIAGE_RETURN, "\\r"};
-//                case 'b': return Token{TokenType::BACKSPACE, "\\b"};
-//                default: return Token{TokenType::ERROR, "Unexpected escape character"};
-//            }
+
         case '/':
             if (peekNextChar() == '/') {
                 advance(); // skip the first '/'

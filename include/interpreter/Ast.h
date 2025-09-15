@@ -3,10 +3,17 @@
 //
 
 #pragma once
+
+#include "TokenType.h"
+
 namespace interpreter {
 
-    class AST {
-
+    class AstNode{
+        private:
+            TokenType type;
+        public:
+        AstNode(TokenType type): type(type){};
+        virtual ~AstNode() = default;
     };
 
 }

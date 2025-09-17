@@ -1,33 +1,43 @@
 //
-// Created by Ajay Sain on 09/09/25.
+// Created by Ajay Sain on 17/09/25.
 //
 
-#pragma once
+#ifndef INTERPRETER_LEXER_H
+#define INTERPRETER_LEXER_H
 
-#include "interpreter/Token.h"
+#include <string>
 
-namespace interpreter {
-    class Lexer {
-    private :
-        std::string expression;
-        int start = 0;
-        int current = 0;
-        int line = 1;
+enum TokenType {
 
-        void advance();
-        char peekNextChar();
-        interpreter::Token _number();
-        interpreter::Token _identifier();
-        interpreter::Token _string(TokenType type);
-        bool isAtEnd();
-        bool match(char i);
+    NUMBER,
+    // all operators
+    PLUS,
+    MINUS,
+    ASTERISK,
+    SLASH,
+    AMPERSAND,
+    CARET,
+    EQUAL,
 
-    public :
-        Token currentToken;
-        Token previousToken;
+    LEFT_PAREN,
+    RIGHT_PAREN,
 
-        explicit Lexer(std::string input) : expression(std::move(input)) {}
-        Token next();
-        Token peek();
-    };
-}
+    EOF_
+};
+
+class Token{
+public:
+    std::string lexeme;
+    TokenType type;
+    Token(TokenType type, std::string lexeme) : type(type), lexeme(lexeme) {}
+};
+
+class Lexer {
+public:
+    std::string expression;
+    Lexer(const std::string& expression) : expression(expression) {}
+    Token next();
+    Token peek();
+};
+
+#endif //INTERPRETER_LEXER_H

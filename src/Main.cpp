@@ -6,6 +6,7 @@
 #include <fstream>
 
 #include "spdlog/spdlog.h"
+#include "interpreter/parser.h"
 
 void printBanner(const std::string& message) {
     size_t padding = 4; // Spaces on each side of the message
@@ -31,7 +32,8 @@ int main(int argc, char **argv) {
             break;
         }
         spdlog::info("You entered: {}", input);
+        Parser parser(input);
+        spdlog::info("Postfix: {}", parser.tree->resolve());
     }
     return 0;
-
 }

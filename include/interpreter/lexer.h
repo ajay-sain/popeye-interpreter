@@ -1,43 +1,79 @@
 //
-// Created by Ajay Sain on 17/09/25.
+// Lexer for the Popeye programming language
 //
 
 #ifndef INTERPRETER_LEXER_H
 #define INTERPRETER_LEXER_H
 
 #include <string>
+#include <stdexcept>
 
-enum TokenType {
+// Token types for the lexer
+enum class TokenType {
+    // Literals
+    NUMBER,     // Numeric literal (e.g., 42, 3.14)
+    IDENTIFIER, // Variable/function name (e.g., x, myVar)
 
-    NUMBER,
-    // all operators
-    PLUS,
-    MINUS,
-    ASTERISK,
-    SLASH,
-    AMPERSAND,
-    CARET,
-    EQUAL,
+    // Operators
+    PLUS,       // +
+    MINUS,      // -
+    ASTERISK,   // *
+    SLASH,      // /
+    MODULO,     // %
+    CARET,      // ^
+    EQUAL,      // =
 
-    LEFT_PAREN,
-    RIGHT_PAREN,
+    // Grouping
+    LEFT_PAREN, // (
+    RIGHT_PAREN,// )
 
-    EOF_
+    // Special
+    UNKNOWN,    // Unknown token (for error handling)
+    END_OF_FILE // End of input
 };
 
-class Token{
-public:
-    std::string lexeme;
+// Represents a token with type and lexeme
+struct Token {
     TokenType type;
-    Token(TokenType type, std::string lexeme) : type(type), lexeme(lexeme) {}
+    std::string lexeme;
+    size_t line;
+
+    Token(TokenType type, std::string lexeme, size_t line = 1)
+        : type(type), lexeme(std::move(lexeme)), line(line) {}
 };
 
 class Lexer {
 public:
-    std::string expression;
-    Lexer(const std::string& expression) : expression(expression) {}
+    explicit Lexer(std::string source);
+
+    // Get the next token from the input
     Token next();
+
+    // Peek at the next token without consuming it
     Token peek();
+
+    // Get the current line number (1-based)
+    size_t getLine() const { return line; }
+
+private:
+    const std::string source;
+    size_t current;
+    size_t start;
+    size_t line;
+
+    // Helper methods
+    void advance();
+    bool isAtEnd() const;
+    char peekChar() const;
+    bool match(char expected);
+
+    // Token creation methods
+    Token number();
+    Token identifier();
+    Token makeToken(TokenType type);
+
+    // Error handling
+    [[noreturn]] void error(const std::string& message) const;
 };
 
-#endif //INTERPRETER_LEXER_H
+#endif // INTERPRETER_LEXER_H

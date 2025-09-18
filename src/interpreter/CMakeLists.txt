@@ -2,7 +2,7 @@
 add_executable(${PROJECT_NAME}
         ../Main.cpp
         #        parser.cpp
-#        lexer.cpp
+        lexer.cpp
 ##        Ast.cpp
 #        Evaluator.cpp
 )

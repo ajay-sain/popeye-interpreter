@@ -29,7 +29,13 @@ enum class TokenType {
 
     // Special
     UNKNOWN,    // Unknown token (for error handling)
-    END_OF_FILE // End of input
+    END_OF_FILE, // End of input
+
+    // Keywords
+    LET,        // let keyword for variable declaration
+
+    // Variable assignment
+    ASSIGN      // = (for variable assignment)
 };
 
 // Represents a token with type and lexeme
@@ -62,7 +68,7 @@ private:
     size_t line;
 
     // Helper methods
-    void advance();
+    char advance();
     bool isAtEnd() const;
     char peekChar() const;
     bool match(char expected);
@@ -74,6 +80,8 @@ private:
 
     // Error handling
     [[noreturn]] void error(const std::string& message) const;
+
+    void skipWhitespace();
 };
 
 #endif // INTERPRETER_LEXER_H

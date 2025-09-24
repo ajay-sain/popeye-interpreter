@@ -8,6 +8,8 @@
 #include <memory>
 #include <string>
 
+#include "interpreter/symbol_table.h"
+
 class Node {
 public:
     virtual ~Node() = default;
@@ -62,7 +64,21 @@ public:
     std::string name;
 
     int resolve() override {
-        throw std::runtime_error("Variable not found: " + name);
+        return SymbolTable::getInstance().get(name);
+    }
+};
+
+class AssignmentNode : public Node {
+    std::string name;
+    std::unique_ptr<Node> value;
+public:
+    AssignmentNode(std::string name, std::unique_ptr<Node> value)
+            : name(std::move(name)), value(std::move(value)) {}
+
+    int resolve() override {
+        int val = value->resolve();
+        SymbolTable::getInstance().add(name, val);
+        return val;
     }
 };
 

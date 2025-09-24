@@ -1,11 +1,13 @@
 //
-// Created by Ajay Sain on 15/09/25.
+// Main entry point for the Popeye interpreter
 //
 
 #include <iostream>
 #include <fstream>
+#include <iomanip>
 
 #include "spdlog/spdlog.h"
+#include "interpreter/lexer.h"
 #include "interpreter/parser.h"
 
 void printBanner(const std::string& message) {
@@ -16,7 +18,9 @@ void printBanner(const std::string& message) {
     std::cout << std::string(totalWidth, '*') << std::endl;
 
     // Message line
-    std::cout << "*" << std::setw(static_cast<int>(totalWidth - 2)) << std::left << std::string(padding, ' ') + message + std::string(padding, ' ') << "*" << std::endl;
+    std::cout << "*" << std::setw(static_cast<int>(totalWidth - 2)) << std::left
+              << std::string(padding, ' ') + message + std::string(padding, ' ')
+              << "*" << std::endl;
 
     // Bottom border
     std::cout << std::string(totalWidth, '*') << std::endl;
@@ -24,16 +28,26 @@ void printBanner(const std::string& message) {
 
 int main(int argc, char **argv) {
     printBanner("Hello from popeye language Interpreter written in C++ for fun!");
-    while(true){
+
+    while(true) {
         std::string input;
-        std::cout << "command > ";
+        std::cout << "popeye> ";
         std::getline(std::cin, input);
+
         if (input == "exit") {
             break;
         }
-        spdlog::info("You entered: {}", input);
-        Parser parser(input);
-        spdlog::info("Postfix: {}", parser.tree->resolve());
+
+        try {
+            Lexer lexer(input);
+            Parser parser(lexer);
+            auto ast = parser.parse();
+            int result = ast->resolve();
+            std::cout << "=> " << result << std::endl;
+        } catch (const std::exception& e) {
+            std::cerr << "Error: " << e.what() << std::endl;
+        }
     }
+
     return 0;
 }

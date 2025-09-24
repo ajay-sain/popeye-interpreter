@@ -1,0 +1,39 @@
+var num1 = 10;
+var num2 = 20;
+print(num1 + num2);
+
+
+
+let num1 = 10;
+let num2 = [1, 3];
+
+read();
+write();
+
+continue;
+break;
+return;
+
+function():
+    body;
+end_function
+
+class:
+    body;
+end_class
+
+
+
+loop(loop_condition):
+    body;
+end_loop
+
+
+if(condition):
+    body;
+elif(condition):
+    body;
+else:
+    body;
+end_if
+

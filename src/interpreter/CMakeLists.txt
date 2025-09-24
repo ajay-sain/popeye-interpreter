@@ -1,7 +1,7 @@
 # Add the main executable
 add_executable(${PROJECT_NAME}
         ../Main.cpp
-        #        parser.cpp
+        parser.cpp
         lexer.cpp
 ##        Ast.cpp
 #        Evaluator.cpp

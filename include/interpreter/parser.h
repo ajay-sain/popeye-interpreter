@@ -1,41 +1,48 @@
 //
-// Created by Ajay Sain on 17/09/25.
+// Parser for the Popeye programming language
 //
 
 #ifndef INTERPRETER_PARSER_H
 #define INTERPRETER_PARSER_H
 
-#include <string>
-#include <stack>
 #include <memory>
 #include <vector>
-#include <unordered_map>
+#include <stack>
+#include <string>
 #include "interpreter/lexer.h"
 #include "interpreter/node.h"
+#include "interpreter/value.h"
+#include "interpreter/symbol_table.h"
 
 class Parser {
+public:
+    explicit Parser(Lexer& lexer);
+
+    // Parse the entire input and return the root of the AST
+    std::unique_ptr<Node> parse();
+
 private:
     Lexer& lexer;
     Token currentToken;
-    std::vector<std::string> postfixExpressions;
     std::vector<std::unique_ptr<Node>> nodes;
+    std::stack<std::unique_ptr<Node>> stack;
 
+    // Helper methods
     void getNextToken();
-    int precedence(const std::string& op) const;
-    void createOperatorNode(char op, std::stack<std::unique_ptr<Node>>& stack);
+    void match(TokenType expectedType, const std::string& errorMessage);
 
-public:
-    Node* tree = nullptr;
-
-    explicit Parser(Lexer& lexer);
-    ~Parser() = default;
-
-    std::unique_ptr<Node> parse();
-    std::unique_ptr<Node> parseAssignment();
+    // Parsing methods
     std::unique_ptr<Node> parseExpression();
+    std::unique_ptr<Node> parseTerm();
+    std::unique_ptr<Node> parseFactor();
+    std::unique_ptr<Node> parsePrimary();
+    std::unique_ptr<Node> parseAssignment();
 
-    void infixToPostfix();
-    void postfixToAST();
+    // Evaluation
+    Value evaluate(const Node* node);
+
+    // Type conversion
+    Value convertToValue(const Token& token) const;
 };
 
 #endif // INTERPRETER_PARSER_H

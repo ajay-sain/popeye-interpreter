@@ -3,6 +3,9 @@ add_executable(${PROJECT_NAME}
         ../Main.cpp
         parser.cpp
         lexer.cpp
+        node.cpp
+        value.cpp
+        symbol_table.cpp
 ##        Ast.cpp
 #        Evaluator.cpp
 )

@@ -1,17 +1,24 @@
 //
-// Created by Ajay Sain on 18/09/25.
+// Parser implementation for the Popeye interpreter
 //
 
 #include "interpreter/parser.h"
 #include <stdexcept>
-#include <stack>
+#include <cmath>
 
-Parser::Parser(Lexer& lexer) : lexer(lexer), currentToken(TokenType::UNKNOWN, "", 1) {
+Parser::Parser(Lexer& lexer) : lexer(lexer), currentToken{TokenType::END_OF_FILE, ""} {
     getNextToken();
 }
 
 void Parser::getNextToken() {
     currentToken = lexer.next();
+}
+
+void Parser::match(TokenType expectedType, const std::string& errorMessage) {
+    if (currentToken.type != expectedType) {
+        throw std::runtime_error(errorMessage);
+    }
+    getNextToken();
 }
 
 std::unique_ptr<Node> Parser::parse() {
@@ -29,10 +36,7 @@ std::unique_ptr<Node> Parser::parseAssignment() {
         std::string varName = currentToken.lexeme;
         getNextToken(); // Consume identifier
 
-        if (currentToken.type != TokenType::ASSIGN) {
-            throw std::runtime_error("Expected '=' after variable name");
-        }
-        getNextToken(); // Consume '='
+        match(TokenType::ASSIGN, "Expected '=' after variable name");
 
         auto expr = parseExpression();
         return std::make_unique<AssignmentNode>(varName, std::move(expr));
@@ -42,106 +46,110 @@ std::unique_ptr<Node> Parser::parseAssignment() {
 }
 
 std::unique_ptr<Node> Parser::parseExpression() {
-    infixToPostfix();
-    postfixToAST();
-    return std::unique_ptr<Node>(tree);
+    auto node = parseTerm();
+
+    while (currentToken.type == TokenType::PLUS || currentToken.type == TokenType::MINUS) {
+        Token op = currentToken;
+        getNextToken();
+        node = std::make_unique<BinaryOpNode>(op.type, std::move(node), parseTerm());
+    }
+
+    return node;
 }
 
-void Parser::infixToPostfix() {
-    std::vector<std::string> postfix;
-    std::stack<std::string> operators;
+std::unique_ptr<Node> Parser::parseTerm() {
+    auto node = parseFactor();
 
-    while (currentToken.type != TokenType::END_OF_FILE) {
-        switch (currentToken.type) {
-            case TokenType::NUMBER:
-            case TokenType::IDENTIFIER:
-                postfix.push_back(currentToken.lexeme);
-                getNextToken();
-                break;
+    while (currentToken.type == TokenType::ASTERISK ||
+           currentToken.type == TokenType::SLASH ||
+           currentToken.type == TokenType::MODULO) {
+        Token op = currentToken;
+        getNextToken();
+        node = std::make_unique<BinaryOpNode>(op.type, std::move(node), parseFactor());
+    }
 
-            case TokenType::LEFT_PAREN:
-                operators.push(currentToken.lexeme);
-                getNextToken();
-                break;
+    return node;
+}
 
-            case TokenType::RIGHT_PAREN: {
-                while (!operators.empty() && operators.top() != "(") {
-                    postfix.push_back(operators.top());
-                    operators.pop();
-                }
-                if (!operators.empty()) operators.pop();
-                getNextToken();
-                break;
+std::unique_ptr<Node> Parser::parseFactor() {
+    auto node = parsePrimary();
+
+    if (currentToken.type == TokenType::CARET) {
+        Token op = currentToken;
+        getNextToken();
+        node = std::make_unique<BinaryOpNode>(op.type, std::move(node), parseFactor());
+    }
+
+    return node;
+}
+
+std::unique_ptr<Node> Parser::parsePrimary() {
+    Token token = currentToken;
+
+    switch (token.type) {
+        case TokenType::INTEGER:
+        case TokenType::FLOAT: {
+            getNextToken();
+            if (token.type == TokenType::FLOAT) {
+                return std::make_unique<LiteralNode>(Value(std::stod(token.lexeme)));
+            } else {
+                return std::make_unique<LiteralNode>(Value(std::stoi(token.lexeme)));
             }
-
-            default: // Operators
-                while (!operators.empty() &&
-                       operators.top() != "(" &&
-                       precedence(currentToken.lexeme) <= precedence(operators.top())) {
-                    postfix.push_back(operators.top());
-                    operators.pop();
-                }
-                operators.push(currentToken.lexeme);
-                getNextToken();
-                break;
         }
-    }
-
-    while (!operators.empty()) {
-        postfix.push_back(operators.top());
-        operators.pop();
-    }
-
-    postfixExpressions = std::move(postfix);
-}
-
-void Parser::postfixToAST() {
-    std::stack<std::unique_ptr<Node>> stack;
-
-    for (const auto& token : postfixExpressions) {
-        if (isdigit(token[0])) {
-            nodes.push_back(std::make_unique<NumberNode>(std::stoi(token)));
-            stack.push(std::unique_ptr<Node>(nodes.back().release()));
+        case TokenType::BOOLEAN: {
+            getNextToken();
+            bool value = (token.lexeme == "true");
+            return std::make_unique<LiteralNode>(Value(value));
         }
-        else if (isalpha(token[0])) {
-            nodes.push_back(std::make_unique<IdentifierNode>(token));
-            stack.push(std::unique_ptr<Node>(nodes.back().release()));
+        case TokenType::STRING: {
+            getNextToken();
+            return std::make_unique<LiteralNode>(Value(token.lexeme));
         }
-        else if (token.size() == 1) {
-            createOperatorNode(token[0], stack);
+        case TokenType::NIL: {
+            getNextToken();
+            return std::make_unique<LiteralNode>(Value());
         }
-    }
-
-    if (!stack.empty()) {
-        tree = stack.top().release();
+        case TokenType::IDENTIFIER: {
+            std::string varName = token.lexeme;
+            getNextToken();
+            return std::make_unique<VariableNode>(varName);
+        }
+        case TokenType::LEFT_PAREN: {
+            getNextToken();
+            auto node = parseExpression();
+            match(TokenType::RIGHT_PAREN, "Expected ')' after expression");
+            return node;
+        }
+        case TokenType::PLUS:
+        case TokenType::MINUS: {
+            Token op = token;
+            getNextToken();
+            return std::make_unique<UnaryOpNode>(op.type, parsePrimary());
+        }
+        default:
+            throw std::runtime_error("Unexpected token: " + token.lexeme);
     }
 }
 
-int Parser::precedence(const std::string& op) const {
-    static const std::unordered_map<std::string, int> precedenceMap = {
-        {"+", 1}, {"-", 1},
-        {"*", 2}, {"/", 2},
-        {"^", 3}
-    };
-    auto it = precedenceMap.find(op);
-    return it != precedenceMap.end() ? it->second : 0;
+Value Parser::evaluate(const Node* node) {
+    return node->evaluate();
 }
 
-void Parser::createOperatorNode(char op, std::stack<std::unique_ptr<Node>>& stack) {
-    if (stack.size() < 2) {
-        throw std::runtime_error("Not enough operands for operator");
+Value Parser::convertToValue(const Token& token) const {
+    switch (token.type) {
+        case TokenType::INTEGER:
+            return Value(std::stoi(token.lexeme));
+        case TokenType::FLOAT:
+            return Value(std::stod(token.lexeme));
+        case TokenType::BOOLEAN:
+            return Value(token.lexeme == "true");
+        case TokenType::STRING:
+            return Value(token.lexeme);
+        case TokenType::NIL:
+            return Value();
+        case TokenType::IDENTIFIER:
+            return SymbolTable::getInstance().get(token.lexeme);
+        default:
+            throw std::runtime_error("Cannot convert token to value: " + token.lexeme);
     }
-
-    auto right = std::move(stack.top());
-    stack.pop();
-    auto left = std::move(stack.top());
-    stack.pop();
-
-    nodes.push_back(std::make_unique<OperatorNode>(
-        op,
-        std::move(left),
-        std::move(right)
-    ));
-
-    stack.push(std::unique_ptr<Node>(nodes.back().release()));
 }

@@ -3,128 +3,100 @@
 //
 
 #include "interpreter/lexer.h"
+#include <stdexcept>
 #include <cctype>
-#include <sstream>
-#include <utility>
 
 Lexer::Lexer(std::string source)
     : source(std::move(source)), current(0), start(0), line(1) {}
 
-char Lexer::advance() {
-    if (isAtEnd()) return '\0';
-    char c = source[current++];
-    if (c == '\n') line++;
-    return c;
-}
-
-bool Lexer::isAtEnd() const {
-    return current >= source.length();
-}
-
-char Lexer::peekChar() const {
-    return isAtEnd() ? '\0' : source[current];
-}
-
-bool Lexer::match(char expected) {
-    if (isAtEnd() || source[current] != expected) {
-        return false;
-    }
-    advance();
-    return true;
-}
-
-[[noreturn]] void Lexer::error(const std::string& message) const {
-    std::ostringstream ss;
-    ss << "[line " << line << "] Error: " << message;
-    throw std::runtime_error(ss.str());
-}
-
-Token Lexer::makeToken(TokenType type) {
-    std::string lexeme = source.substr(start, current - start);
-    return Token{type, lexeme, line};
-}
-
 Token Lexer::next() {
     skipWhitespace();
-    start = current;
 
     if (isAtEnd()) {
         return makeToken(TokenType::END_OF_FILE);
     }
 
+    start = current;
     char c = advance();
+
+    // Handle string literals
+    if (c == '"') {
+        return string();
+    }
 
     // Handle identifiers and keywords
     if (isalpha(c) || c == '_') {
         while (isalnum(peekChar()) || peekChar() == '_') {
-            c = advance(); // Update the advance() call to handle the return value
+            advance();
         }
 
         std::string text = source.substr(start, current - start);
-        if (text == "let") {
-            return makeToken(TokenType::LET);
-        }
+
+        // Check for keywords
+        if (text == "let") return makeToken(TokenType::LET);
+        if (text == "true" || text == "false") return makeToken(TokenType::BOOLEAN);
+        if (text == "nil") return makeToken(TokenType::NIL);
+
         return makeToken(TokenType::IDENTIFIER);
     }
 
-    // Handle numbers
+    // Handle numbers (integers and floats)
     if (isdigit(c)) {
+        bool isFloat = false;
+
         while (isdigit(peekChar())) {
             advance();
         }
 
         // Handle decimal point
-        if (peekChar() == '.' && isdigit(source[current + 1])) {
+        if (peekChar() == '.') {
+            isFloat = true;
             advance(); // Consume the decimal point
+
+            if (!isdigit(peekChar())) {
+                error("Expected digit after decimal point");
+            }
+
             while (isdigit(peekChar())) {
                 advance();
             }
         }
 
-        return makeToken(TokenType::NUMBER);
-    }
+        // Handle scientific notation
+        if (peekChar() == 'e' || peekChar() == 'E') {
+            isFloat = true;
+            advance(); // Consume 'e' or 'E'
 
-    // Handle operators and other tokens
-    switch (c) {
-        case '=':
-            return makeToken(TokenType::ASSIGN);
-        case '+':
-            return makeToken(TokenType::PLUS);
-        case '-':
-            return makeToken(TokenType::MINUS);
-        case '*':
-            return makeToken(TokenType::ASTERISK);
-        case '/':
-            return makeToken(TokenType::SLASH);
-        case '%':
-            return makeToken(TokenType::MODULO);
-        case '^':
-            return makeToken(TokenType::CARET);
-        case '(':
-            return makeToken(TokenType::LEFT_PAREN);
-        case ')':
-            return makeToken(TokenType::RIGHT_PAREN);
-        default:
-            return makeToken(TokenType::UNKNOWN);
-    }
-}
+            if (peekChar() == '+' || peekChar() == '-') {
+                advance(); // Consume sign
+            }
 
-void Lexer::skipWhitespace() {
-    while (!isAtEnd()) {
-        char c = peekChar();
-        switch (c) {
-            case ' ':
-            case '\r':
-            case '\t':
+            if (!isdigit(peekChar())) {
+                error("Expected digit in exponent");
+            }
+
+            while (isdigit(peekChar())) {
                 advance();
-                break;
-            case '\n':
-                line++;
-                advance();
-                break;
-            default:
-                return;
+            }
         }
+
+        return makeToken(isFloat ? TokenType::FLOAT : TokenType::INTEGER);
+    }
+
+    // Handle operators and other single-character tokens
+    switch (c) {
+        case '=': return makeToken(TokenType::ASSIGN);
+        case '+': return makeToken(TokenType::PLUS);
+        case '-': return makeToken(TokenType::MINUS);
+        case '*': return makeToken(TokenType::ASTERISK);
+        case '/': return makeToken(TokenType::SLASH);
+        case '%': return makeToken(TokenType::MODULO);
+        case '^': return makeToken(TokenType::CARET);
+        case '(': return makeToken(TokenType::LEFT_PAREN);
+        case ')': return makeToken(TokenType::RIGHT_PAREN);
+        case ',': return makeToken(TokenType::COMMA);
+        case ';': return makeToken(TokenType::SEMICOLON);
+        default:  return makeToken(TokenType::UNKNOWN);
     }
 }
 
@@ -133,38 +105,103 @@ Token Lexer::peek() {
     size_t savedStart = start;
     size_t savedLine = line;
 
-    Token nextToken = next();
+    Token token = next();
 
-    // Restore state
     current = savedCurrent;
     start = savedStart;
     line = savedLine;
 
-    return nextToken;
+    return token;
 }
 
-Token Lexer::number() {
-    while (isdigit(peekChar())) {
-        advance();
-    }
+Token Lexer::makeToken(TokenType type) const {
+    std::string text = source.substr(start, current - start);
+    return Token(type, text, line);
+}
 
-    // Look for decimal point
-    if (peekChar() == '.' && isdigit(source[current + 1])) {
-        advance(); // Consume the decimal point
+Token Lexer::string() {
+    std::string value;
 
-        while (isdigit(peekChar())) {
+    while (peekChar() != '"' && !isAtEnd()) {
+        if (peekChar() == '\\') {
+            advance(); // Consume the backslash
+
+            // Handle escape sequences
+            switch (peekChar()) {
+                case 'n': value += '\n'; break;
+                case 't': value += '\t'; break;
+                case 'r': value += '\r'; break;
+                case '"': value += '"'; break;
+                case '\\': value += '\\'; break;
+                default:
+                    error("Invalid escape sequence");
+            }
+            advance(); // Consume the escaped character
+        } else {
+            value += peekChar();
             advance();
         }
     }
 
-    return makeToken(TokenType::NUMBER);
-}
-
-Token Lexer::identifier() {
-
-    while (isalnum(peekChar()) || peekChar() == '_') {
-        advance();
+    if (isAtEnd()) {
+        error("Unterminated string");
     }
 
-    return makeToken(TokenType::IDENTIFIER);
+    advance(); // Consume the closing "
+    return Token(TokenType::STRING, value, line);
+}
+
+void Lexer::skipWhitespace() {
+    while (true) {
+        char c = peekChar();
+        switch (c) {
+            case ' ':
+            case '\r':
+            case '\t':
+                advance();
+                break;
+
+            case '\n':
+                line++;
+                advance();
+                break;
+
+            case '/':
+                if (peekNextChar() == '/') {
+                    // A comment goes until the end of the line
+                    while (peekChar() != '\n' && !isAtEnd()) {
+                        advance();
+                    }
+                } else {
+                    return;
+                }
+                break;
+
+            default:
+                return;
+        }
+    }
+}
+
+char Lexer::advance() {
+    if (isAtEnd()) return '\0';
+    return source[current++];
+}
+
+char Lexer::peekChar() const {
+    if (isAtEnd()) return '\0';
+    return source[current];
+}
+
+char Lexer::peekNextChar() const {
+    if (current + 1 >= source.length()) return '\0';
+    return source[current + 1];
+}
+
+bool Lexer::isAtEnd() const {
+    return current >= source.length();
+}
+
+[[noreturn]] void Lexer::error(const std::string& message) const {
+    throw std::runtime_error("Line " + std::to_string(line) + ": " + message);
 }

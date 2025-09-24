@@ -11,31 +11,37 @@
 // Token types for the lexer
 enum class TokenType {
     // Literals
-    NUMBER,     // Numeric literal (e.g., 42, 3.14)
-    IDENTIFIER, // Variable/function name (e.g., x, myVar)
-
-    // Operators
-    PLUS,       // +
-    MINUS,      // -
-    ASTERISK,   // *
-    SLASH,      // /
-    MODULO,     // %
-    CARET,      // ^
-    EQUAL,      // =
-
-    // Grouping
-    LEFT_PAREN, // (
-    RIGHT_PAREN,// )
-
-    // Special
-    UNKNOWN,    // Unknown token (for error handling)
-    END_OF_FILE, // End of input
+    INTEGER,     // Integer literal (e.g., 42)
+    FLOAT,       // Floating-point literal (e.g., 3.14, 1e-5)
+    BOOLEAN,     // Boolean literal (true, false)
+    STRING,      // String literal (e.g., "hello")
+    NIL,         // Nil literal (nil)
+    IDENTIFIER,  // Variable/function name (e.g., x, myVar)
 
     // Keywords
-    LET,        // let keyword for variable declaration
+    LET,         // let keyword for variable declaration
 
-    // Variable assignment
-    ASSIGN      // = (for variable assignment)
+    // Operators
+    PLUS,        // +
+    MINUS,       // -
+    ASTERISK,    // *
+    SLASH,       // /
+    MODULO,      // %
+    CARET,       // ^ (exponentiation)
+    EQUAL,       // =
+    ASSIGN,      // = (for variable assignment)
+
+    // Grouping
+    LEFT_PAREN,  // (
+    RIGHT_PAREN, // )
+
+    // Punctuation
+    COMMA,       // ,
+    SEMICOLON,   // ;
+
+    // Special
+    UNKNOWN,     // Unknown token (for error handling)
+    END_OF_FILE  // End of input
 };
 
 // Represents a token with type and lexeme
@@ -71,17 +77,16 @@ private:
     char advance();
     bool isAtEnd() const;
     char peekChar() const;
+    char peekNextChar() const;
     bool match(char expected);
-
-    // Token creation methods
-    Token number();
-    Token identifier();
-    Token makeToken(TokenType type);
+    void skipWhitespace();
+    Token makeToken(TokenType type) const;
+    Token string();
 
     // Error handling
     [[noreturn]] void error(const std::string& message) const;
 
-    void skipWhitespace();
+    std::string string() const;
 };
 
 #endif // INTERPRETER_LEXER_H

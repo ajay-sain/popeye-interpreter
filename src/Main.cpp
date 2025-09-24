@@ -31,7 +31,7 @@ int main(int argc, char **argv) {
 
     while(true) {
         std::string input;
-        std::cout << "popeye> ";
+        std::cout << "popeye => ";
         std::getline(std::cin, input);
 
         if (input == "exit") {
@@ -42,7 +42,7 @@ int main(int argc, char **argv) {
             Lexer lexer(input);
             Parser parser(lexer);
             auto ast = parser.parse();
-            int result = ast->resolve();
+            Value result = ast->evaluate();
             std::cout << "=> " << result << std::endl;
         } catch (const std::exception& e) {
             std::cerr << "Error: " << e.what() << std::endl;

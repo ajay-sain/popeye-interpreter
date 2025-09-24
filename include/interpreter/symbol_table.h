@@ -2,66 +2,66 @@
 // Created by Ajay Sain on 18/09/25.
 //
 
-#ifndef INTERPRETER_SYMBOLTABLE_H
-#define INTERPRETER_SYMBOLTABLE_H
+#ifndef INTERPRETER_SYMBOL_TABLE_H
+#define INTERPRETER_SYMBOL_TABLE_H
 
 #include <string>
 #include <stdexcept>
 #include <iostream>
 #include <unordered_map>
+#include "interpreter/value.h"
 
 class SymbolTable {
     private:
-    SymbolTable() = default; // Private constructor
+    std::unordered_map<std::string, Value> symbols;
+    static SymbolTable* instance;
+
+    // Private constructor for singleton
+    SymbolTable() = default;
 
     public:
-    static SymbolTable& getInstance() {
-        static SymbolTable instance; // Guaranteed to be destroyed.
-                                     // Instantiated on first use.
-        return instance;
+    // Delete copy constructor and assignment operator
+    SymbolTable(const SymbolTable&) = delete;
+    SymbolTable& operator=(const SymbolTable&) = delete;
+
+    // Get singleton instance
+    static SymbolTable& getInstance();
+
+    // Add or update a variable
+    void set(const std::string& name, const Value& value) {
+        symbols[name] = value;
     }
 
-    private:
-    std::unordered_map<std::string, int> table;
-    SymbolTable(const SymbolTable&) = delete;  // No copy constructor allowed
-    void operator=(const SymbolTable&) = delete; // No copy assignment operator allowed
-
-    public:
-    void add(const std::string& name, int value) {
-        table[name] = value;
-    }
-
-    int get(const std::string& name) {
-        auto it = table.find(name);
-        if (it == table.end()) {
+    // Get a variable's value
+    Value get(const std::string& name) const {
+        auto it = symbols.find(name);
+        if (it == symbols.end()) {
             throw std::runtime_error("Undefined variable: " + name);
         }
-        return table[name];
+        return it->second;
     }
 
-    bool has(const std::string& name) {
-        return table.find(name) != table.end();
+    // Check if a variable exists
+    bool exists(const std::string& name) const {
+        return symbols.find(name) != symbols.end();
     }
 
-    void remove(const std::string& name) {
-        table.erase(name);
-    }
-
+    // Clear all symbols
     void clear() {
-        table.clear();
+        symbols.clear();
     }
 
-    size_t size() const {
-        return table.size();
-    }
-
+    // Print all symbols (for debugging)
     void print() const {
-        for (const auto& [name, value] : table) {
+        for (const auto& [name, value] : symbols) {
             std::cout << name << " = " << value << std::endl;
         }
     }
 
+    size_t size() const {
+        return symbols.size();
+    }
+
 };
 
-
-#endif //INTERPRETER_SYMBOLTABLE_H
+#endif // INTERPRETER_SYMBOL_TABLE_H

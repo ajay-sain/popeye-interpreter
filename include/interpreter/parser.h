@@ -32,12 +32,19 @@ private:
     void match(TokenType expectedType, const std::string& errorMessage);
 
     // Parsing methods
+    std::unique_ptr<Node> parseAssignment();
     std::unique_ptr<Node> parseExpression();
+    std::unique_ptr<Node> parseLogicalOr();
+    std::unique_ptr<Node> parseLogicalAnd();
+    std::unique_ptr<Node> parseBitwiseOr();
+    std::unique_ptr<Node> parseBitwiseXor();
+    std::unique_ptr<Node> parseBitwiseAnd();
+    std::unique_ptr<Node> parseEquality();
     std::unique_ptr<Node> parseComparison();
     std::unique_ptr<Node> parseTerm();
     std::unique_ptr<Node> parseFactor();
+    std::unique_ptr<Node> parseUnary();
     std::unique_ptr<Node> parsePrimary();
-    std::unique_ptr<Node> parseAssignment();
 
     // Evaluation
     Value evaluate(const Node* node);

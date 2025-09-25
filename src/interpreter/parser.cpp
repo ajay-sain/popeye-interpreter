@@ -38,15 +38,76 @@ std::unique_ptr<Node> Parser::parseAssignment() {
 
         match(TokenType::ASSIGN, "Expected '=' after variable name");
 
-        auto expr = parseExpression();
+        auto expr = parseLogicalOr();
         return std::make_unique<AssignmentNode>(varName, std::move(expr));
     }
 
-    return parseExpression();
+    return parseLogicalOr();
 }
 
-std::unique_ptr<Node> Parser::parseExpression() {
-    return parseComparison();
+std::unique_ptr<Node> Parser::parseLogicalOr() {
+    auto node = parseLogicalAnd();
+
+    while (currentToken.type == TokenType::PIPE_PIPE) {
+        Token op = currentToken;
+        getNextToken();
+        node = std::make_unique<BinaryOpNode>(op.type, std::move(node), parseLogicalAnd());
+    }
+
+    return node;
+}
+
+std::unique_ptr<Node> Parser::parseLogicalAnd() {
+    return parseBitwiseOr();
+}
+
+std::unique_ptr<Node> Parser::parseBitwiseOr() {
+    auto node = parseBitwiseXor();
+
+    while (currentToken.type == TokenType::PIPE) {
+        Token op = currentToken;
+        getNextToken();
+        node = std::make_unique<BinaryOpNode>(op.type, std::move(node), parseBitwiseXor());
+    }
+
+    return node;
+}
+
+std::unique_ptr<Node> Parser::parseBitwiseXor() {
+    auto node = parseBitwiseAnd();
+
+    while (currentToken.type == TokenType::CARET) {
+        Token op = currentToken;
+        getNextToken();
+        node = std::make_unique<BinaryOpNode>(op.type, std::move(node), parseBitwiseAnd());
+    }
+
+    return node;
+}
+
+std::unique_ptr<Node> Parser::parseBitwiseAnd() {
+    auto node = parseEquality();
+
+    while (currentToken.type == TokenType::AMPERSAND) {
+        Token op = currentToken;
+        getNextToken();
+        node = std::make_unique<BinaryOpNode>(op.type, std::move(node), parseEquality());
+    }
+
+    return node;
+}
+
+std::unique_ptr<Node> Parser::parseEquality() {
+    auto node = parseComparison();
+
+    while (currentToken.type == TokenType::EQUAL_EQUAL ||
+           currentToken.type == TokenType::BANG_EQUAL) {
+        Token op = currentToken;
+        getNextToken();
+        node = std::make_unique<BinaryOpNode>(op.type, std::move(node), parseComparison());
+    }
+
+    return node;
 }
 
 std::unique_ptr<Node> Parser::parseComparison() {
@@ -55,9 +116,7 @@ std::unique_ptr<Node> Parser::parseComparison() {
     while (currentToken.type == TokenType::LESS ||
            currentToken.type == TokenType::LESS_EQUAL ||
            currentToken.type == TokenType::GREATER ||
-           currentToken.type == TokenType::GREATER_EQUAL ||
-           currentToken.type == TokenType::EQUAL_EQUAL ||
-           currentToken.type == TokenType::BANG_EQUAL) {
+           currentToken.type == TokenType::GREATER_EQUAL) {
         Token op = currentToken;
         getNextToken();
         node = std::make_unique<BinaryOpNode>(op.type, std::move(node), parseTerm());
@@ -79,17 +138,29 @@ std::unique_ptr<Node> Parser::parseTerm() {
 }
 
 std::unique_ptr<Node> Parser::parseFactor() {
-    auto node = parsePrimary();
+    auto node = parseUnary();
 
-    if (currentToken.type == TokenType::ASTERISK ||
-        currentToken.type == TokenType::SLASH ||
-        currentToken.type == TokenType::MODULO) {
+    while (currentToken.type == TokenType::ASTERISK ||
+           currentToken.type == TokenType::SLASH ||
+           currentToken.type == TokenType::MODULO) {
         Token op = currentToken;
         getNextToken();
-        node = std::make_unique<BinaryOpNode>(op.type, std::move(node), parseFactor());
+        node = std::make_unique<BinaryOpNode>(op.type, std::move(node), parseUnary());
     }
 
     return node;
+}
+
+std::unique_ptr<Node> Parser::parseUnary() {
+    if (currentToken.type == TokenType::MINUS ||
+        currentToken.type == TokenType::BANG ||
+        currentToken.type == TokenType::TILDE) {
+        Token op = currentToken;
+        getNextToken();
+        return std::make_unique<UnaryOpNode>(op.type, parseUnary());
+    }
+
+    return parsePrimary();
 }
 
 std::unique_ptr<Node> Parser::parsePrimary() {
@@ -125,15 +196,9 @@ std::unique_ptr<Node> Parser::parsePrimary() {
         }
         case TokenType::LEFT_PAREN: {
             getNextToken();
-            auto node = parseExpression();
+            auto node = parseLogicalOr();
             match(TokenType::RIGHT_PAREN, "Expected ')' after expression");
             return node;
-        }
-        case TokenType::PLUS:
-        case TokenType::MINUS: {
-            Token op = token;
-            getNextToken();
-            return std::make_unique<UnaryOpNode>(op.type, parsePrimary());
         }
         default:
             throw std::runtime_error("Unexpected token: " + token.lexeme);

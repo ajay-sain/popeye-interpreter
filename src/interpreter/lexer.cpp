@@ -61,16 +61,15 @@ Token Lexer::next() {
         return makeToken(isFloat ? TokenType::FLOAT : TokenType::INTEGER);
     }
 
-    // Handle comparison operators
+    // Handle operators and other single-character tokens
     switch (c) {
-        case '=':
-            return makeToken(match('=') ? TokenType::EQUAL_EQUAL : TokenType::ASSIGN);
-        case '!':
-            return makeToken(match('=') ? TokenType::BANG_EQUAL : TokenType::UNKNOWN);
-        case '<':
-            return makeToken(match('=') ? TokenType::LESS_EQUAL : TokenType::LESS);
-        case '>':
-            return makeToken(match('=') ? TokenType::GREATER_EQUAL : TokenType::GREATER);
+        case '=': return makeToken(match('=') ? TokenType::EQUAL_EQUAL : TokenType::ASSIGN);
+        case '!': return makeToken(match('=') ? TokenType::BANG_EQUAL : TokenType::BANG);
+        case '<': return makeToken(match('=') ? TokenType::LESS_EQUAL : TokenType::LESS);
+        case '>': return makeToken(match('=') ? TokenType::GREATER_EQUAL : TokenType::GREATER);
+        case '|': return makeToken(match('|') ? TokenType::PIPE_PIPE : TokenType::PIPE);
+        case '&': return makeToken(match('&') ? TokenType::AMP_AMP : TokenType::AMPERSAND);
+        case '~': return makeToken(TokenType::TILDE);
         case '+': return makeToken(TokenType::PLUS);
         case '-': return makeToken(TokenType::MINUS);
         case '*': return makeToken(TokenType::ASTERISK);
@@ -81,8 +80,7 @@ Token Lexer::next() {
         case ')': return makeToken(TokenType::RIGHT_PAREN);
         case ',': return makeToken(TokenType::COMMA);
         case ';': return makeToken(TokenType::SEMICOLON);
-        default:
-            return makeToken(TokenType::UNKNOWN);
+        default:  return makeToken(TokenType::UNKNOWN);
     }
 }
 

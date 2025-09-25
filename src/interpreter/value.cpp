@@ -128,3 +128,43 @@ Value Value::operator%(const Value& other) const {
 Value Value::operator-() const {
     return Value(-asNumeric());
 }
+
+// Bitwise operators
+Value Value::operator|(const Value& other) const {
+    return Value(asInteger() | other.asInteger());
+}
+
+Value Value::operator&(const Value& other) const {
+    return Value(asInteger() & other.asInteger());
+}
+
+Value Value::operator^(const Value& other) const {
+    return Value(asInteger() ^ other.asInteger());
+}
+
+Value Value::operator~() const {
+    return Value(~asInteger());
+}
+
+Value Value::operator<<(const Value& other) const {
+    return Value(asInteger() << other.asInteger());
+}
+
+Value Value::operator>>(const Value& other) const {
+    return Value(asInteger() >> other.asInteger());
+}
+
+// Logical operators
+Value Value::operator||(const Value& other) const {
+    return Value(asBoolean() || other.asBoolean());
+}
+
+Value Value::operator&&(const Value& other) const {
+    return Value(asBoolean() && other.asBoolean());
+}
+
+Value Value::operator!() const {
+    return Value(!static_cast<bool>(*this));
+}
+
+// Type conversion helpers

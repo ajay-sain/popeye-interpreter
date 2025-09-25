@@ -28,8 +28,14 @@ enum class TokenType {
     SLASH,       // /
     MODULO,      // %
     CARET,       // ^ (exponentiation)
+    TILDE,       // ~ (bitwise NOT)
+    BANG,        // ! (logical NOT)
     EQUAL,       // =
     ASSIGN,      // = (for variable assignment)
+    PIPE,        // |
+    AMPERSAND,   // &
+    PIPE_PIPE,   // ||
+    AMP_AMP,     // &&
     LESS,        // <
     LESS_EQUAL,  // <=
     GREATER,     // >

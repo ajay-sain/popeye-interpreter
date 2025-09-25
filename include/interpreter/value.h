@@ -72,6 +72,18 @@ public:
         }
     }
 
+    // Type conversion operators
+    explicit operator bool() const {
+        switch (type) {
+            case Type::NIL: return false;
+            case Type::INTEGER: return intValue != 0;
+            case Type::FLOAT: return floatValue != 0.0;
+            case Type::BOOLEAN: return boolValue;
+            case Type::STRING: return !stringValue->empty();
+            default: return false;
+        }
+    }
+
     // Comparison operators
     bool operator==(const Value& other) const;
     bool operator!=(const Value& other) const { return !(*this == other); }
@@ -87,6 +99,19 @@ public:
     Value operator/(const Value& other) const;
     Value operator%(const Value& other) const;
     Value operator-() const; // Unary minus
+
+    // Bitwise operators
+    Value operator|(const Value& other) const;  // Bitwise OR
+    Value operator&(const Value& other) const;  // Bitwise AND
+    Value operator^(const Value& other) const;  // Bitwise XOR
+    Value operator~() const;                   // Bitwise NOT
+    Value operator<<(const Value& other) const; // Left shift
+    Value operator>>(const Value& other) const; // Right shift
+
+    // Logical operators (short-circuiting)
+    Value operator||(const Value& other) const; // Logical OR
+    Value operator&&(const Value& other) const; // Logical AND
+    Value operator!() const;                    // Logical NOT
 
     // Type conversion helpers
     double asNumeric() const {

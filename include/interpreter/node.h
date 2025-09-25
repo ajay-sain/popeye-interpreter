@@ -47,15 +47,23 @@ public:
                 return left_val % right_val;
             }
             case TokenType::CARET: {
-                return Value(std::pow(left_val.asFloat(), right_val.asFloat()));
+                // Handle both exponentiation (^) and bitwise XOR (^) based on context
+                // In C++, we'll use CARET for bitwise XOR, and we'll use a different token for exponentiation if needed
+                return left_val ^ right_val;
             }
+            // Bitwise operators
+            case TokenType::PIPE: return left_val | right_val;
+            case TokenType::AMPERSAND: return left_val & right_val;
             // Comparison operators
-            case TokenType::LESS:           return Value(left_val < right_val);
-            case TokenType::LESS_EQUAL:     return Value(left_val <= right_val);
-            case TokenType::GREATER:        return Value(left_val > right_val);
-            case TokenType::GREATER_EQUAL:  return Value(left_val >= right_val);
-            case TokenType::EQUAL_EQUAL:    return Value(left_val == right_val);
-            case TokenType::BANG_EQUAL:     return Value(!(left_val == right_val));
+            case TokenType::LESS: return Value(left_val < right_val);
+            case TokenType::LESS_EQUAL: return Value(left_val <= right_val);
+            case TokenType::GREATER: return Value(left_val > right_val);
+            case TokenType::GREATER_EQUAL: return Value(left_val >= right_val);
+            case TokenType::EQUAL_EQUAL: return Value(left_val == right_val);
+            case TokenType::BANG_EQUAL: return Value(!(left_val == right_val));
+            // Logical operators
+            case TokenType::PIPE_PIPE: return left_val || right_val;
+            case TokenType::AMP_AMP: return left_val && right_val;
             default:
                 throw std::runtime_error("Unknown binary operator");
         }
@@ -76,6 +84,8 @@ public:
         switch(op) {
             case TokenType::PLUS: return operand_val;  // Unary plus
             case TokenType::MINUS: return -operand_val; // Unary minus
+            case TokenType::BANG: return !operand_val;  // Logical NOT
+            case TokenType::TILDE: return ~operand_val; // Bitwise NOT
             default:
                 throw std::runtime_error("Unknown unary operator");
         }

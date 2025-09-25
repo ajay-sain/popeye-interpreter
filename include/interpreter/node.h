@@ -49,6 +49,13 @@ public:
             case TokenType::CARET: {
                 return Value(std::pow(left_val.asFloat(), right_val.asFloat()));
             }
+            // Comparison operators
+            case TokenType::LESS:           return Value(left_val < right_val);
+            case TokenType::LESS_EQUAL:     return Value(left_val <= right_val);
+            case TokenType::GREATER:        return Value(left_val > right_val);
+            case TokenType::GREATER_EQUAL:  return Value(left_val >= right_val);
+            case TokenType::EQUAL_EQUAL:    return Value(left_val == right_val);
+            case TokenType::BANG_EQUAL:     return Value(!(left_val == right_val));
             default:
                 throw std::runtime_error("Unknown binary operator");
         }

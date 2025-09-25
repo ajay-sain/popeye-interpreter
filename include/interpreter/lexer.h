@@ -30,6 +30,12 @@ enum class TokenType {
     CARET,       // ^ (exponentiation)
     EQUAL,       // =
     ASSIGN,      // = (for variable assignment)
+    LESS,        // <
+    LESS_EQUAL,  // <=
+    GREATER,     // >
+    GREATER_EQUAL, // >=
+    EQUAL_EQUAL, // ==
+    BANG_EQUAL,  // !=
 
     // Grouping
     LEFT_PAREN,  // (

@@ -46,9 +46,18 @@ std::unique_ptr<Node> Parser::parseAssignment() {
 }
 
 std::unique_ptr<Node> Parser::parseExpression() {
+    return parseComparison();
+}
+
+std::unique_ptr<Node> Parser::parseComparison() {
     auto node = parseTerm();
 
-    while (currentToken.type == TokenType::PLUS || currentToken.type == TokenType::MINUS) {
+    while (currentToken.type == TokenType::LESS ||
+           currentToken.type == TokenType::LESS_EQUAL ||
+           currentToken.type == TokenType::GREATER ||
+           currentToken.type == TokenType::GREATER_EQUAL ||
+           currentToken.type == TokenType::EQUAL_EQUAL ||
+           currentToken.type == TokenType::BANG_EQUAL) {
         Token op = currentToken;
         getNextToken();
         node = std::make_unique<BinaryOpNode>(op.type, std::move(node), parseTerm());
@@ -60,9 +69,7 @@ std::unique_ptr<Node> Parser::parseExpression() {
 std::unique_ptr<Node> Parser::parseTerm() {
     auto node = parseFactor();
 
-    while (currentToken.type == TokenType::ASTERISK ||
-           currentToken.type == TokenType::SLASH ||
-           currentToken.type == TokenType::MODULO) {
+    while (currentToken.type == TokenType::PLUS || currentToken.type == TokenType::MINUS) {
         Token op = currentToken;
         getNextToken();
         node = std::make_unique<BinaryOpNode>(op.type, std::move(node), parseFactor());
@@ -74,7 +81,9 @@ std::unique_ptr<Node> Parser::parseTerm() {
 std::unique_ptr<Node> Parser::parseFactor() {
     auto node = parsePrimary();
 
-    if (currentToken.type == TokenType::CARET) {
+    if (currentToken.type == TokenType::ASTERISK ||
+        currentToken.type == TokenType::SLASH ||
+        currentToken.type == TokenType::MODULO) {
         Token op = currentToken;
         getNextToken();
         node = std::make_unique<BinaryOpNode>(op.type, std::move(node), parseFactor());

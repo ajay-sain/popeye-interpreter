@@ -61,6 +61,35 @@ bool Value::operator==(const Value& other) const {
     }
 }
 
+// Comparison operators
+bool Value::operator<(const Value& other) const {
+    if (type == Type::STRING && other.type == Type::STRING) {
+        return *stringValue < *other.stringValue;
+    }
+    return asNumeric() < other.asNumeric();
+}
+
+bool Value::operator<=(const Value& other) const {
+    if (type == Type::STRING && other.type == Type::STRING) {
+        return *stringValue <= *other.stringValue;
+    }
+    return asNumeric() <= other.asNumeric();
+}
+
+bool Value::operator>(const Value& other) const {
+    if (type == Type::STRING && other.type == Type::STRING) {
+        return *stringValue > *other.stringValue;
+    }
+    return asNumeric() > other.asNumeric();
+}
+
+bool Value::operator>=(const Value& other) const {
+    if (type == Type::STRING && other.type == Type::STRING) {
+        return *stringValue >= *other.stringValue;
+    }
+    return asNumeric() >= other.asNumeric();
+}
+
 // Arithmetic operators
 Value Value::operator+(const Value& other) const {
     if (type == Type::STRING || other.type == Type::STRING) {

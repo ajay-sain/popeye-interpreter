@@ -48,32 +48,10 @@ Token Lexer::next() {
             advance();
         }
 
-        // Handle decimal point
-        if (peekChar() == '.') {
+        // Check for decimal part
+        if (peekChar() == '.' && isdigit(peekNextChar())) {
             isFloat = true;
-            advance(); // Consume the decimal point
-
-            if (!isdigit(peekChar())) {
-                error("Expected digit after decimal point");
-            }
-
-            while (isdigit(peekChar())) {
-                advance();
-            }
-        }
-
-        // Handle scientific notation
-        if (peekChar() == 'e' || peekChar() == 'E') {
-            isFloat = true;
-            advance(); // Consume 'e' or 'E'
-
-            if (peekChar() == '+' || peekChar() == '-') {
-                advance(); // Consume sign
-            }
-
-            if (!isdigit(peekChar())) {
-                error("Expected digit in exponent");
-            }
+            advance(); // Consume the '.'
 
             while (isdigit(peekChar())) {
                 advance();
@@ -83,9 +61,16 @@ Token Lexer::next() {
         return makeToken(isFloat ? TokenType::FLOAT : TokenType::INTEGER);
     }
 
-    // Handle operators and other single-character tokens
+    // Handle comparison operators
     switch (c) {
-        case '=': return makeToken(TokenType::ASSIGN);
+        case '=':
+            return makeToken(match('=') ? TokenType::EQUAL_EQUAL : TokenType::ASSIGN);
+        case '!':
+            return makeToken(match('=') ? TokenType::BANG_EQUAL : TokenType::UNKNOWN);
+        case '<':
+            return makeToken(match('=') ? TokenType::LESS_EQUAL : TokenType::LESS);
+        case '>':
+            return makeToken(match('=') ? TokenType::GREATER_EQUAL : TokenType::GREATER);
         case '+': return makeToken(TokenType::PLUS);
         case '-': return makeToken(TokenType::MINUS);
         case '*': return makeToken(TokenType::ASTERISK);
@@ -96,7 +81,8 @@ Token Lexer::next() {
         case ')': return makeToken(TokenType::RIGHT_PAREN);
         case ',': return makeToken(TokenType::COMMA);
         case ';': return makeToken(TokenType::SEMICOLON);
-        default:  return makeToken(TokenType::UNKNOWN);
+        default:
+            return makeToken(TokenType::UNKNOWN);
     }
 }
 
@@ -200,6 +186,12 @@ char Lexer::peekNextChar() const {
 
 bool Lexer::isAtEnd() const {
     return current >= source.length();
+}
+
+bool Lexer::match(char expected) {
+    if (isAtEnd() || source[current] != expected) return false;
+    current++;
+    return true;
 }
 
 [[noreturn]] void Lexer::error(const std::string& message) const {

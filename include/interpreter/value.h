@@ -75,6 +75,10 @@ public:
     // Comparison operators
     bool operator==(const Value& other) const;
     bool operator!=(const Value& other) const { return !(*this == other); }
+    bool operator<(const Value& other) const;
+    bool operator<=(const Value& other) const;
+    bool operator>(const Value& other) const;
+    bool operator>=(const Value& other) const;
 
     // Arithmetic operators
     Value operator+(const Value& other) const;

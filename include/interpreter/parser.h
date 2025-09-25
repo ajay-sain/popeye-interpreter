@@ -33,6 +33,7 @@ private:
 
     // Parsing methods
     std::unique_ptr<Node> parseExpression();
+    std::unique_ptr<Node> parseComparison();
     std::unique_ptr<Node> parseTerm();
     std::unique_ptr<Node> parseFactor();
     std::unique_ptr<Node> parsePrimary();

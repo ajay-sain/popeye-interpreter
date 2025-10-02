@@ -46,6 +46,7 @@ public:
 
     // Getters with type checking
     int asInteger() const {
+        printf("Value: %d\n", intValue);
         if (type != Type::INTEGER) throw std::runtime_error("Not an integer");
         return intValue;
     }

@@ -3,12 +3,12 @@
 //
 
 #include <iostream>
-#include <fstream>
 #include <iomanip>
 
 #include "spdlog/spdlog.h"
-#include "interpreter/lexer.h"
-#include "interpreter/parser.h"
+
+#include "interpreter/lexer/Lexer.h"
+#include "interpreter/AST/parser/Parser.h"
 
 void printBanner(const std::string& message) {
     size_t padding = 4; // Spaces on each side of the message
@@ -43,7 +43,7 @@ int main(int argc, char **argv) {
             Parser parser(lexer);
             auto ast = parser.parse();
             Value result = ast->evaluate();
-            std::cout << "=> " << result << std::endl;
+            spdlog::info("=> {}" , result.asString() );
         } catch (const std::exception& e) {
             std::cerr << "Error: " << e.what() << std::endl;
         }

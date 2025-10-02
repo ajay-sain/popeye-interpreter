@@ -2,9 +2,10 @@
 // Lexer implementation for the Popeye programming language
 //
 
-#include "interpreter/lexer.h"
 #include <stdexcept>
 #include <cctype>
+
+#include "interpreter/lexer/Lexer.h"
 
 Lexer::Lexer(std::string source)
     : source(std::move(source)), current(0), start(0), line(1) {}

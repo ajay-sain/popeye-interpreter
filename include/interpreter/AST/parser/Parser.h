@@ -1,18 +1,12 @@
 //
-// Parser for the Popeye programming language
+// Created by Ajay Sain on 25/09/25.
 //
 
 #ifndef INTERPRETER_PARSER_H
 #define INTERPRETER_PARSER_H
 
-#include <memory>
-#include <vector>
-#include <stack>
-#include <string>
-#include "interpreter/lexer.h"
-#include "interpreter/node.h"
-#include "interpreter/value.h"
-#include "interpreter/symbol_table.h"
+#include "interpreter/lexer/Lexer.h"
+#include "interpreter/AST/node/NodeFactory.h"
 
 class Parser {
 public:
@@ -53,4 +47,5 @@ private:
     Value convertToValue(const Token& token) const;
 };
 
-#endif // INTERPRETER_PARSER_H
+
+#endif //INTERPRETER_PARSER_H

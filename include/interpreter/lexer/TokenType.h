@@ -1,12 +1,9 @@
 //
-// Lexer for the Popeye programming language
+// Created by Ajay Sain on 25/09/25.
 //
 
-#ifndef INTERPRETER_LEXER_H
-#define INTERPRETER_LEXER_H
-
-#include <string>
-#include <stdexcept>
+#ifndef INTERPRETER_TOKENTYPE_H
+#define INTERPRETER_TOKENTYPE_H
 
 // Token types for the lexer
 enum class TokenType {
@@ -56,49 +53,4 @@ enum class TokenType {
     END_OF_FILE  // End of input
 };
 
-// Represents a token with type and lexeme
-struct Token {
-    TokenType type;
-    std::string lexeme;
-    size_t line;
-
-    Token(TokenType type, std::string lexeme, size_t line = 1)
-        : type(type), lexeme(std::move(lexeme)), line(line) {}
-};
-
-class Lexer {
-public:
-    explicit Lexer(std::string source);
-
-    // Get the next token from the input
-    Token next();
-
-    // Peek at the next token without consuming it
-    Token peek();
-
-    // Get the current line number (1-based)
-    size_t getLine() const { return line; }
-
-private:
-    const std::string source;
-    size_t current;
-    size_t start;
-    size_t line;
-
-    // Helper methods
-    char advance();
-    bool isAtEnd() const;
-    char peekChar() const;
-    char peekNextChar() const;
-    bool match(char expected);
-    void skipWhitespace();
-    Token makeToken(TokenType type) const;
-    Token string();
-
-    // Error handling
-    [[noreturn]] void error(const std::string& message) const;
-
-    std::string string() const;
-};
-
-#endif // INTERPRETER_LEXER_H
+#endif //INTERPRETER_TOKENTYPE_H

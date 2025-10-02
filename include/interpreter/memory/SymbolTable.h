@@ -9,7 +9,7 @@
 #include <stdexcept>
 #include <iostream>
 #include <unordered_map>
-#include "interpreter/value.h"
+#include "interpreter/memory/Value.h"
 
 class SymbolTable {
     private:

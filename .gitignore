@@ -1,7 +1,9 @@
 backup
 
-# PyCharm
+#CLion
 .idea/
+
+# PyCharm
 *.iml
 *.iws
 .pytest_cache/
@@ -53,6 +55,12 @@ cmake-build-release/
 *.exe
 *.out
 *.app
+
+# IDE specific files
+.vscode/
+.idea/
+*.user
+*.suo
 *.ncb
 *.suo
 *.pdb

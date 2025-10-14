@@ -1,13 +1,7 @@
 # Add the main executable
 add_executable(${PROJECT_NAME}
-        ../Main.cpp
-        parser.cpp
-        lexer.cpp
-        node.cpp
-        value.cpp
-        symbol_table.cpp
-##        Ast.cpp
-#        Evaluator.cpp
+        ../main.cpp
+        ../interpreter/Interpreter.cpp
 )
 
 # Set include directories for this target
